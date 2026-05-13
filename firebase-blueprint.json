@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores user settings, preferences, and progress.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "fontFamily": { "type": "string" },
+            "fontSize": { "type": "number" },
+            "theme": { "type": "string", "enum": ["light", "dark", "amoled", "emerald"] },
+            "translation": { "type": "string" },
+            "reciter": { "type": "string" }
+          }
+        },
+        "stats": {
+          "type": "object",
+          "properties": {
+            "streakCount": { "type": "integer" },
+            "lastReadDate": { "type": "string", "format": "date-time" },
+            "totalAyahsRead": { "type": "integer" }
+          }
+        },
+        "lastRead": {
+          "type": "object",
+          "properties": {
+            "surahNumber": { "type": "integer" },
+            "ayahNumber": { "type": "integer" },
+            "pageNumber": { "type": "integer" },
+            "timestamp": { "type": "string", "format": "date-time" }
+          }
+        }
+      },
+      "required": ["userId"]
+    },
+    "Bookmark": {
+      "title": "Bookmark",
+      "description": "Saved ayah or page reference.",
+      "type": "object",
+      "properties": {
+        "bookmarkId": { "type": "string" },
+        "userId": { "type": "string" },
+        "surahNumber": { "type": "integer" },
+        "ayahNumber": { "type": "integer" },
+        "pageNumber": { "type": "integer" },
+        "type": { "type": "string", "enum": ["ayah", "page"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["bookmarkId", "userId", "type"]
+    },
+    "Note": {
+      "title": "Ayah Note",
+      "description": "User's personal reflection or notes on an ayah.",
+      "type": "object",
+      "properties": {
+        "noteId": { "type": "string" },
+        "userId": { "type": "string" },
+        "surahNumber": { "type": "integer" },
+        "ayahNumber": { "type": "integer" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["noteId", "userId", "surahNumber", "ayahNumber", "content"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Individual user document indexed by their UID."
+    },
+    "/users/{userId}/bookmarks/{bookmarkId}": {
+      "schema": "Bookmark",
+      "description": "User's collection of bookmarks."
+    },
+    "/users/{userId}/notes/{noteId}": {
+      "schema": "Note",
+      "description": "User's collection of notes."
+    },
+    "/test/connection": {
+      "schema": { "type": "object", "properties": { "status": { "type": "string" } } },
+      "description": "Public health check document to verify Firestore connectivity."
+    }
+  }
+}

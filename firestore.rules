@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    
+    // --- Entity Validations ---
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['userId']) && 
+             data.userId == request.auth.uid &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 256)) &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 100)) &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1024)) &&
+             (!('settings' in data) || (data.settings is map)) &&
+             (!('stats' in data) || (data.stats is map));
+    }
+
+    function isValidBookmark(data) {
+      return data.keys().hasAll(['bookmarkId', 'userId', 'type', 'createdAt']) &&
+             data.bookmarkId == request.resource.id &&
+             data.userId == request.auth.uid &&
+             data.type in ['ayah', 'page'] &&
+             (!('surahNumber' in data) || (data.surahNumber is int && data.surahNumber >= 1 && data.surahNumber <= 114)) &&
+             (!('ayahNumber' in data) || (data.ayahNumber is int)) &&
+             (!('pageNumber' in data) || (data.pageNumber is int)) &&
+             data.createdAt == request.time;
+    }
+
+    function isValidNote(data) {
+      return data.keys().hasAll(['noteId', 'userId', 'surahNumber', 'ayahNumber', 'content', 'createdAt']) &&
+             data.noteId == request.resource.id &&
+             data.userId == request.auth.uid &&
+             data.surahNumber is int && data.surahNumber >= 1 && data.surahNumber <= 114 &&
+             data.ayahNumber is int &&
+             data.content is string && data.content.size() <= 5000 &&
+             data.createdAt == request.time;
+    }
+
+    // --- Collection Routes ---
+
+    match /test/connection {
+      allow read: if true;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) && 
+                    incoming().userId == existing().userId;
+      
+      match /bookmarks/{bookmarkId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(bookmarkId) && isValidBookmark(incoming());
+        allow delete: if isOwner(userId);
+      }
+
+      match /notes/{noteId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(noteId) && isValidNote(incoming());
+        allow update: if isOwner(userId) && isValidNote(incoming()) && 
+                      incoming().createdAt == existing().createdAt;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

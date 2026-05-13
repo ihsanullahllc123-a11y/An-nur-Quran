@@ -1,0 +1,6 @@
+{
+  "name": "An-Nur Quran",
+  "description": "A premium, modern Islamic app for Quran reading, prayer times, and AI-powered spiritual guidance.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": []
+}
