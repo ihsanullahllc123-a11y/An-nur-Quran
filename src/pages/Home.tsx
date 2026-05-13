@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Map, Compass, Hash, Calendar, Heart, LayoutGrid, Sparkles, ChevronRight, Clock, MapPin } from 'lucide-react';
+import { BookOpen, Map, Compass, Hash, Calendar, Heart, LayoutGrid, Sparkles, ChevronRight, Clock, MapPin, HandHeart } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { getNextPrayer, getTimeRemaining, formatTime12h } from '../lib/prayerUtils';
 import { cn } from '../lib/utils';
+import Logo from '../components/Logo';
+import AdBanner from '../components/AdBanner';
 
 const DashboardCard = ({ icon: Icon, title, to, color = "bg-emerald-50" }: any) => (
   <Link to={to}>
@@ -26,13 +28,7 @@ export default function Home() {
   const { progress, prayerTimes, setPrayerTimes, location, setLocation, user, settings } = useAppStore();
   const [nextPrayer, setNextPrayer] = useState<any>(null);
   const [curTime, setCurTime] = useState(new Date());
-  const [lastMushafPage, setLastMushafPage] = useState<number | null>(null);
   const today = new Date();
-
-  useEffect(() => {
-    const lastPage = localStorage.getItem('mushaf_last_page');
-    if (lastPage) setLastMushafPage(parseInt(lastPage));
-  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setCurTime(new Date()), 1000);
@@ -95,15 +91,17 @@ export default function Home() {
         <div className="relative z-10 p-5 flex flex-col justify-between h-full text-white">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-3">
-               <div className="w-10 h-10 rounded-full border-2 border-emerald-500/50 overflow-hidden bg-white/10 flex items-center justify-center">
-                 {user?.photoURL ? (
+               {user?.photoURL ? (
+                 <div className="w-10 h-10 rounded-full border-2 border-emerald-500/50 overflow-hidden shadow-sm">
                    <img src={user.photoURL} alt="User" className="w-full h-full object-cover" />
-                 ) : (
-                   <span className="font-black text-emerald-500 leading-none">{user?.displayName?.[0] || 'i'}</span>
-                 )}
-               </div>
+                 </div>
+               ) : (
+                 <Logo className="w-10 h-10" />
+               )}
                <div>
-                  <h1 className="text-lg font-bold tracking-tight">Assalamu Alaikum, {user?.displayName?.split(' ')[0] || 'ihsan'}</h1>
+                  <h1 className="text-lg font-bold tracking-tight">
+                    {user?.displayName ? `Salam, ${user.displayName.split(' ')[0]}` : 'An-Nur Quran'}
+                  </h1>
                   <div className="flex items-center gap-1 opacity-70">
                     <MapPin size={10} className="text-emerald-400" />
                     <p className="text-[10px] font-bold uppercase tracking-wider">{location?.city || "Finding location..."}</p>
@@ -133,9 +131,7 @@ export default function Home() {
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-sm font-bold uppercase tracking-widest text-amber-600">Continue Reading</h2>
-              {lastMushafPage ? (
-                <p className="text-foreground/70 text-xs mt-1">Mushaf: Page {lastMushafPage}</p>
-              ) : progress ? (
+              {progress ? (
                 <p className="text-foreground/70 text-xs mt-1">Surah {progress.surahNumber}, Ayah {progress.ayahNumber}</p>
               ) : (
                 <p className="text-foreground/70 text-xs mt-1">Start your journey today</p>
@@ -146,25 +142,13 @@ export default function Home() {
             </div>
           </div>
           <div className="flex gap-2">
-            {lastMushafPage && (
-              <Link 
-                to="/mushaf" 
-                state={{ startPage: lastMushafPage }} 
-                className="flex-1 bg-amber-600 text-white py-2.5 px-3 rounded-xl text-center text-xs font-bold shadow-lg shadow-amber-600/20 active:scale-95 transition-transform"
-              >
-                Resume Mushaf
-              </Link>
-            )}
             <Link 
               to="/quran" 
               state={{ 
                 resumeSurah: progress?.surahNumber || 1,
                 resumeAyah: progress?.ayahNumber || 1
               }} 
-              className={cn(
-                "flex-1 py-2.5 px-3 rounded-xl text-center text-xs font-bold active:scale-95 transition-transform",
-                lastMushafPage ? "bg-white/50 text-amber-900 border border-amber-500/20" : "bg-amber-600 text-white shadow-lg shadow-amber-600/20"
-              )}
+              className="flex-1 bg-amber-600 text-white py-2.5 px-3 rounded-xl text-center text-xs font-bold shadow-lg shadow-amber-600/20 active:scale-95 transition-transform"
             >
               {progress ? 'Resume Quran' : 'Start Reading'}
             </Link>
@@ -185,23 +169,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* AI Islamic Assistant Banner */}
-      <section className="bg-indigo-900 rounded-3xl p-6 text-white overflow-hidden relative shadow-lg">
-        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]" />
+      {/* Sadaqah Jariya Support Banner */}
+      <section className="bg-emerald-900 rounded-3xl p-6 text-white overflow-hidden relative shadow-lg">
+        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/islamic-art.png')]" />
         <div className="relative z-10 flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <Sparkles size={20} className="text-indigo-300" />
-            <h2 className="text-lg font-bold">Ask An-Nur</h2>
+            <HandHeart size={20} className="text-emerald-300" />
+            <h2 className="text-lg font-bold">Sadaqah Jariya</h2>
           </div>
-          <p className="text-indigo-100/80 text-xs font-light leading-relaxed">
-            Need guidance or have a question about the Quran? Our Islamic AI is here to help you 24/7.
+          <p className="text-emerald-100/80 text-xs font-light leading-relaxed">
+            Support the ongoing development of An-Nur Quran and earn perpetual rewards. Your contribution helps us keep this app free & premium for the Ummah.
           </p>
-          <Link to="/ai" className="mt-2 text-indigo-300 text-xs font-bold uppercase tracking-widest flex items-center gap-1 hover:text-white transition-colors">
-            Start Conversation <ChevronRight size={14} />
+          <Link to="/support" className="mt-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl inline-flex items-center justify-center text-xs font-bold uppercase tracking-widest transition-colors border border-white/20 w-fit">
+            Support Project <ChevronRight size={14} className="ml-1" />
           </Link>
         </div>
         <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
       </section>
+
+      <AdBanner className="rounded-3xl mt-2" />
     </div>
   );
 }

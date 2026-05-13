@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { RotateCcw, Hash, Settings as SettingsIcon, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import AdBanner from '../components/AdBanner';
 
 export default function Tasbeeh() {
   const [count, setCount] = useState(0);
@@ -88,6 +89,8 @@ export default function Tasbeeh() {
             <span className="text-[10px] font-bold uppercase tracking-widest">{Math.floor(total / 33)} Sets</span>
           </div>
         </div>
+
+        <AdBanner className="rounded-3xl mt-4" />
       </div>
     </div>
   );

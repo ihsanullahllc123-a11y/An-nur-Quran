@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Compass, MapPin, ChevronLeft, Info, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
+import AdBanner from '../components/AdBanner';
 
 export default function Qibla() {
   const navigate = useNavigate();
@@ -113,6 +114,8 @@ export default function Qibla() {
             Calibrate your compass before use by moving your device in a figure-8 motion.
           </p>
         </div>
+
+        <AdBanner className="rounded-3xl mt-4" />
       </div>
     </div>
   );

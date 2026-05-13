@@ -4,6 +4,7 @@ import { Clock, MapPin, Navigation, Bell, Map as MapIcon, ChevronRight, Loader2,
 import { useAppStore } from '../store/useAppStore';
 import { cn } from '../lib/utils';
 import { getNextPrayer, getTimeRemaining, formatTime12h } from '../lib/prayerUtils';
+import AdBanner from '../components/AdBanner';
 
 export default function PrayerTimes() {
   const [loading, setLoading] = useState(true);
@@ -212,6 +213,8 @@ export default function PrayerTimes() {
         </div>
         <ChevronRight className="text-amber-500" />
       </div>
+
+      <AdBanner className="rounded-3xl mt-4" />
     </div>
   );
 }

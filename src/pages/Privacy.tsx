@@ -39,7 +39,7 @@ export default function Privacy() {
         </button>
         <div>
           <h1 className="text-2xl font-black text-foreground tracking-tight">Privacy Policy</h1>
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest leading-none mt-1">An-Nur Premium</p>
+          <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest leading-none mt-1">An-Nur Quran</p>
         </div>
       </header>
 
@@ -74,10 +74,14 @@ export default function Privacy() {
         ))}
       </div>
 
-      <footer className="mt-auto py-8 text-center">
-        <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-2">Last Updated: May 2026</p>
+      <footer className="mt-auto py-8 text-center space-y-4">
+        <div className="flex justify-center gap-4 text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+          <button onClick={() => navigate('/terms')} className="hover:underline">Terms of Service</button>
+          <span>•</span>
+          <p className="">Last Updated: May 2026</p>
+        </div>
         <p className="text-xs text-muted-foreground/60 px-8">
-          By using An-Nur, you agree to our terms of service and this privacy policy. 
+          By using An-Nur Quran, you agree to our terms of service and this privacy policy. 
           If you have any questions, please contact us through our official channels.
         </p>
       </footer>

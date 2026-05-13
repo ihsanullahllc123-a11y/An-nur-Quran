@@ -60,7 +60,11 @@ export default function JuzzIndex() {
             key={juzz.id}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => navigate('/mushaf', { state: { startPage: juzz.page } })}
+            onClick={() => {
+              const [startPart] = juzz.range.split(' - ');
+              const [surah, ayah] = startPart.split(':').map(Number);
+              navigate('/quran', { state: { resumeSurah: surah, resumeAyah: ayah } });
+            }}
             className="group relative flex items-center justify-between p-4 bg-emerald-500/[0.03] border border-emerald-500/10 rounded-2xl overflow-hidden hover:bg-emerald-500/[0.06] transition-all"
           >
             <div className="flex items-center gap-4">

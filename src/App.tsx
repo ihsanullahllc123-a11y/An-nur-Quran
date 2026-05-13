@@ -1,11 +1,16 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './lib/firebase';
 import { useAppStore } from './store/useAppStore';
 
-// Pages (to be created)
+// Components
+import Navigation from './components/Navigation';
+import AudioPlayer from './components/AudioPlayer';
+import SplashScreen from './components/SplashScreen';
+
+// Pages
 import Home from './pages/Home';
 import QuranReader from './pages/QuranReader';
 import PrayerTimes from './pages/PrayerTimes';
@@ -14,10 +19,10 @@ import Tasbeeh from './pages/Tasbeeh';
 import Settings from './pages/Settings';
 import IslamicAI from './pages/IslamicAI';
 import JuzzIndex from './pages/JuzzIndex';
-import MushafReader from './pages/MushafReader';
+import Duas from './pages/Duas';
 import Privacy from './pages/Privacy';
-import Navigation from './components/Navigation';
-import AudioPlayer from './components/AudioPlayer';
+import TermsOfService from './pages/TermsOfService';
+import Support from './pages/Support';
 
 const PageWrapper = ({ children }: { children: React.ReactNode }) => (
   <motion.div
@@ -34,6 +39,14 @@ const PageWrapper = ({ children }: { children: React.ReactNode }) => (
 const AppContent = () => {
   const location = useLocation();
   const { setUser, settings } = useAppStore();
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -50,6 +63,7 @@ const AppContent = () => {
 
   return (
     <div className="bg-background text-foreground font-sans min-h-screen transition-colors duration-300">
+      <SplashScreen isVisible={showSplash} />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
@@ -60,8 +74,10 @@ const AppContent = () => {
           <Route path="/settings" element={<PageWrapper><Settings /></PageWrapper>} />
           <Route path="/ai" element={<PageWrapper><IslamicAI /></PageWrapper>} />
           <Route path="/juzz" element={<PageWrapper><JuzzIndex /></PageWrapper>} />
-          <Route path="/mushaf" element={<PageWrapper><MushafReader /></PageWrapper>} />
+          <Route path="/duas" element={<PageWrapper><Duas /></PageWrapper>} />
+          <Route path="/support" element={<PageWrapper><Support /></PageWrapper>} />
           <Route path="/privacy" element={<PageWrapper><Privacy /></PageWrapper>} />
+          <Route path="/terms" element={<PageWrapper><TermsOfService /></PageWrapper>} />
         </Routes>
       </AnimatePresence>
       <Navigation />

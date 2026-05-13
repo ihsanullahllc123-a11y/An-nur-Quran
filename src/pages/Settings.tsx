@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Shield, Bell, Moon, Globe, Type, Trash2, Info, ChevronRight, LogIn, LogOut, Sparkles, Mic, Scale, School } from 'lucide-react';
+import { User, Shield, Bell, Moon, Globe, Type, Trash2, Info, ChevronRight, LogIn, LogOut, Sparkles, Mic, Scale, School, ScrollText, HandHeart } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { useAudioStore, QARIS } from '../store/useAudioStore';
 import { signInWithGoogle, logout } from '../lib/firebase';
@@ -8,10 +9,92 @@ import { PRAYER_METHODS } from '../lib/prayerUtils';
 
 import { useNavigate } from 'react-router-dom';
 
+import Logo from '../components/Logo';
+
 export default function Settings() {
   const navigate = useNavigate();
   const { settings, setSettings, user } = useAppStore();
   const { currentQari, setQari } = useAudioStore();
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission>(
+    typeof Notification !== 'undefined' ? Notification.permission : 'default'
+  );
+  const [cacheSize, setCacheSize] = useState("Calculating...");
+
+  useEffect(() => {
+    // Sync with localStorage preference if needed, but primary is browser permission
+    const savedPermission = localStorage.getItem('annur_notifications');
+    if (savedPermission === 'granted' && Notification.permission === 'default') {
+      // We can't actually force it granted from storage, but we can track intent
+    }
+  }, []);
+
+  useEffect(() => {
+    // Basic cache size estimation
+    if ('storage' in navigator && 'estimate' in navigator.storage) {
+      navigator.storage.estimate().then(estimate => {
+        if (estimate.usage) {
+          const mb = (estimate.usage / (1024 * 1024)).toFixed(1);
+          setCacheSize(`${mb} MB`);
+        } else {
+          setCacheSize("0 MB");
+        }
+      });
+    } else {
+      setCacheSize("Unknown");
+    }
+  }, []);
+
+  const handleRequestNotifications = () => {
+    if (!('Notification' in window)) {
+      alert("This browser does not support notifications.");
+      return;
+    }
+
+    Notification.requestPermission().then(permission => {
+      setNotifPermission(permission);
+      localStorage.setItem('annur_notifications', permission);
+      
+      if (permission === 'granted') {
+        new Notification("An-Nur Quran", {
+          body: "BarakAllah! Notifications are now enabled.",
+          icon: "/icon-192.png"
+        });
+      } else if (permission === 'denied') {
+        alert("Notifications are blocked by your browser settings. Please enable them to receive prayer alerts.");
+      }
+    });
+  };
+
+  const handleClearCache = async () => {
+    if (!window.confirm("Are you sure you want to clear all cached data? This will remove offline Quran pages, audio, and reset your local settings.")) {
+      return;
+    }
+
+    try {
+      // 1. Clear Storage
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+
+      // 2. Clear Service Worker Caches
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(key => caches.delete(key)));
+      }
+
+      // 3. Reset UI state immediately
+      setCacheSize("0.0 MB");
+      
+      alert("Cache cleared successfully! Re-syncing app state...");
+      
+      // 4. Reload after 1 second as requested
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err) {
+      console.error("Failed to clear cache:", err);
+      alert("An error occurred while clearing the cache.");
+    }
+  };
 
   const activeQari = QARIS.find(q => q.identifier === currentQari);
   const activeMethod = PRAYER_METHODS.find(m => m.id === settings.prayerMethod);
@@ -96,9 +179,22 @@ export default function Settings() {
     {
       title: "System",
       items: [
-        { icon: Bell, label: "Notifications", value: "Enabled", action: () => {} },
-        { icon: Shield, label: "Privacy & Data", value: "", action: () => navigate('/privacy') },
-        { icon: Trash2, label: "Clear Cache", value: "45MB", color: "text-red-500", action: () => {} },
+        { icon: HandHeart, label: "Support Project", value: "Sadaqah Jariya", color: "text-amber-500", action: () => navigate('/support') },
+        { 
+          icon: Bell, 
+          label: "Notifications", 
+          value: notifPermission === 'granted' ? "ENABLED" : (notifPermission === 'denied' ? "BLOCKED" : "DISABLED"), 
+          action: handleRequestNotifications 
+        },
+        { icon: Shield, label: "Privacy Policy", value: "", action: () => navigate('/privacy') },
+        { icon: ScrollText, label: "Terms of Service", value: "", action: () => navigate('/terms') },
+        { 
+          icon: Trash2, 
+          label: "Clear Cache", 
+          value: cacheSize, 
+          color: "text-red-500", 
+          action: handleClearCache 
+        },
       ]
     }
   ];
@@ -179,13 +275,13 @@ export default function Settings() {
 
       {/* Footer Info */}
       <div className="flex flex-col items-center gap-4 py-8">
-        <div className="flex items-center gap-2 text-emerald-200">
-           <Sparkles size={20} />
-           <span className="font-arabic text-xl">An-Nur</span>
+        <div className="flex items-center gap-2">
+           <Logo className="w-8 h-8" />
+           <span className="font-bold text-lg text-foreground">An-Nur Quran</span>
         </div>
         <div className="text-center">
-          <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest">Version 1.0.0 (Premium)</p>
-          <p className="text-[10px] text-emerald-200 mt-1">Made with barakah for the Ummah</p>
+          <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Version 1.2.0</p>
+          <p className="text-[10px] text-muted-foreground mt-1">Made with barakah for the Ummah</p>
         </div>
       </div>
     </div>

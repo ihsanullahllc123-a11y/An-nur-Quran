@@ -4,6 +4,7 @@ import { Send, Sparkles, User, Bot, Trash2, Book, Heart, HelpCircle } from 'luci
 import ReactMarkdown from 'react-markdown';
 import { askIslamicAssistant } from '../lib/gemini';
 import { cn } from '../lib/utils';
+import AdBanner from '../components/AdBanner';
 
 interface Message {
   id: string;
@@ -178,9 +179,10 @@ export default function IslamicAI() {
             <Send size={18} />
           </button>
         </div>
-        <p className="text-[9px] text-center text-indigo-300 mt-3 uppercase tracking-widest font-bold">
+        <p className="text-[9px] text-center text-indigo-300 mt-2 uppercase tracking-widest font-bold">
           An-Nur AI can make mistakes. Always consult a scholar for serious matters.
         </p>
+        <AdBanner className="mt-2" />
       </footer>
     </div>
   );

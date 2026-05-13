@@ -6,6 +6,7 @@ import { cn } from '../lib/utils';
 import { useAppStore } from '../store/useAppStore';
 import { useAudioStore } from '../store/useAudioStore';
 import AudioPlayer from '../components/AudioPlayer';
+import AdBanner from '../components/AdBanner';
 
 interface Surah {
   number: number;
@@ -172,6 +173,8 @@ export default function QuranReader() {
                 ))}
               </div>
             )}
+
+            <AdBanner className="rounded-3xl mt-4" />
           </motion.div>
         ) : (
           <motion.div 
@@ -292,6 +295,8 @@ export default function QuranReader() {
                   </div>
                 ))
               )}
+
+              <AdBanner className="rounded-3xl mt-8" />
             </div>
           </motion.div>
         )}
