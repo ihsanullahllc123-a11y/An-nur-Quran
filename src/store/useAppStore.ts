@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { db } from '../lib/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 
 interface UserSettings {
   theme: 'light' | 'dark' | 'amoled' | 'emerald';
@@ -48,8 +50,31 @@ export const useAppStore = create<AppState>()(
       prayerTimes: null,
       location: null,
       setUser: (user) => set({ user }),
-      setSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
-      setProgress: (progress) => set({ progress }),
+      setSettings: async (newSettings) => {
+        set((state) => {
+          const updatedSettings = { ...state.settings, ...newSettings };
+          
+          // Sync with Firestore if user is logged in
+          if (state.user) {
+            updateDoc(doc(db, 'users', state.user.uid), {
+              settings: updatedSettings
+            }).catch(err => console.error('Error syncing settings:', err));
+          }
+          
+          return { settings: updatedSettings };
+        });
+      },
+      setProgress: async (progress) => {
+        set((state) => {
+          // Sync with Firestore if user is logged in
+          if (state.user) {
+            updateDoc(doc(db, 'users', state.user.uid), {
+              lastRead: progress
+            }).catch(err => console.error('Error syncing progress:', err));
+          }
+          return { progress };
+        });
+      },
       setPrayerTimes: (prayerTimes) => set({ prayerTimes }),
       setLocation: (location) => set({ location }),
     }),

@@ -1,19 +1,34 @@
 import { create } from 'zustand';
 import { Howl } from 'howler';
 
-interface Qari {
+export interface Qari {
   identifier: string;
   name: string;
   englishName: string;
+  origin: string;
 }
 
 export const QARIS: Qari[] = [
-  { identifier: 'ar.alafasy', name: 'مشاري راشد العفاسي', englishName: 'Mishary Rashid Alafasy' },
-  { identifier: 'ar.abdulbasitmurattal', name: 'عبد الباسط عبد الصمد (مرتل)', englishName: 'AbdulBaset AbdulSamad' },
-  { identifier: 'ar.abdulsamad', name: 'عبد الباسط عبد الصمد (مجود)', englishName: 'AbdulBaset AbdulSamad (Mujawwad)' },
-  { identifier: 'ar.as-sudais', name: 'عبد الرحمن السديس', englishName: 'Abdurrahmaan As-Sudais' },
-  { identifier: 'ar.maheralmuaiqly', name: 'ماهر المعيقلي', englishName: 'Maher Al Muaiqly' },
-  { identifier: 'ar.ghamidi', name: 'سعد الغامدي', englishName: 'Saad El Ghamidi' },
+  { identifier: 'ar.alafasy', name: 'مشاري راشد العفاسي', englishName: 'Mishary Rashid Alafasy', origin: 'Kuwait - Imam Grand Mosque' },
+  { identifier: 'ar.as-sudais', name: 'عبد الرحمن السديس', englishName: 'Abdurrahmaan As-Sudais', origin: 'Saudi Arabia - Imam Masjid Al-Haram' },
+  { identifier: 'ar.abdulbasitmurattal', name: 'عبد الباسط (مرتل)', englishName: 'AbdulBaset (Murattal)', origin: 'Egypt - World Renowned Qari' },
+  { identifier: 'ar.abdulsamad', name: 'عبد الباسط (مجود)', englishName: 'AbdulBaset (Mujawwad)', origin: 'Egypt - Voice of Mecca' },
+  { identifier: 'ar.maheralmuaiqly', name: 'ماهر المعيقلي', englishName: 'Maher Al Muaiqly', origin: 'Saudi Arabia - Imam Masjid Al-Haram' },
+  { identifier: 'ar.ghamidi', name: 'سعد الغامدي', englishName: 'Saad El Ghamidi', origin: 'Saudi Arabia - Imam & Qari' },
+  { identifier: 'ar.ahmedajamy', name: 'أحمد بن علي العجمي', englishName: 'Ahmed Al Ajamy', origin: 'Saudi Arabia - Khobar' },
+  { identifier: 'ar.husary', name: 'محمود خليل الحصري', englishName: 'Mahmoud Al Hussary', origin: 'Egypt - Shaykh al-Maqari' },
+  { identifier: 'ar.husarymujawwad', name: 'الحصري (مجود)', englishName: 'Al Hussary (Mujawwad)', origin: 'Egypt - Classic Mujawwad' },
+  { identifier: 'ar.abdullahbasfar', name: 'عبد الله بصفر', englishName: 'Abdullah Basfar', origin: 'Saudi Arabia - Secretary General' },
+  { identifier: 'ar.shatri', name: 'أبو بكر الشاطري', englishName: 'Abu Bakr Al Shatri', origin: 'Saudi Arabia - Jeddah' },
+  { identifier: 'ar.minshawi', name: 'محمد صديق المنشاوي', englishName: 'Mohamed El Minshawi', origin: 'Egypt - The Sorrowful Voice' },
+  { identifier: 'ar.minshawimujawwad', name: 'المنشاوي (مجود)', englishName: 'Minshawi (Mujawwad)', origin: 'Egypt - Legendary Master' },
+  { identifier: 'ar.saoodshuraym', name: 'سعود الشريم', englishName: 'Saud Al Shuraim', origin: 'Saudi Arabia - Former Imam Haram' },
+  { identifier: 'ar.yasseraddossari', name: 'ياسر الدوسري', englishName: 'Yasser Al Dosari', origin: 'Saudi Arabia - Imam Masjid Al-Haram' },
+  { identifier: 'ar.hanirifai', name: 'هاني الرفاعي', englishName: 'Hani Ar Rifai', origin: 'Saudi Arabia - Jeddah' },
+  { identifier: 'ar.tunaiji', name: 'خليفة الطنيجي', englishName: 'Khalifah Al Tunaiji', origin: 'UAE - Sharjah' },
+  { identifier: 'ar.alijaber', name: 'علي جابر', englishName: 'Ali Jaber', origin: 'Saudi Arabia - Late Imam Haram' },
+  { identifier: 'ar.faresabbad', name: 'فارس عباد', englishName: 'Fares Abbad', origin: 'Yemen - Renowned Reciter' },
+  { identifier: 'ar.salahalbudair', name: 'صلاح البدير', englishName: 'Salah Al Budair', origin: 'Saudi Arabia - Imam Masjid Nabawi' },
 ];
 
 interface AudioState {

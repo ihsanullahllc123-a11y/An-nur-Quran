@@ -4,8 +4,9 @@ import { Search, BookOpen, ChevronLeft, Volume2, Bookmark, Type, Menu, ArrowRigh
 import { useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useAppStore } from '../store/useAppStore';
-import { useAudioStore } from '../store/useAudioStore';
+import { useAudioStore, QARIS } from '../store/useAudioStore';
 import AudioPlayer from '../components/AudioPlayer';
+import { ReciterHeader, ReciterDialog } from '../components/ReciterSelection';
 import AdBanner from '../components/AdBanner';
 
 interface Surah {
@@ -26,8 +27,10 @@ export default function QuranReader() {
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'reader'>('list');
   const [readerStyle, setReaderStyle] = useState<'translation' | 'mushaf'>('translation');
+  const [isReciterDialogOpen, setIsReciterDialogOpen] = useState(false);
+  
   const { settings, setProgress } = useAppStore();
-  const { currentAyah, currentSurah, isPlaying, play, pause, resume } = useAudioStore();
+  const { currentAyah, currentSurah, isPlaying, play, pause, resume, currentQari } = useAudioStore();
 
   useEffect(() => {
     fetch('https://api.alquran.cloud/v1/surah')
@@ -46,7 +49,7 @@ export default function QuranReader() {
   const handleSurahClick = async (num: number, targetAyah?: number) => {
     setLoading(true);
     setSelectedSurah(num);
-    const audioEdition = settings.reciter || 'ar.alafasy';
+    const audioEdition = currentQari || 'ar.alafasy';
     const translationEdition = settings.translation || 'en.sahih';
     
     try {
@@ -112,6 +115,10 @@ export default function QuranReader() {
             exit={{ opacity: 0 }}
             className="p-5 flex flex-col gap-6"
           >
+            {/* Reciter Selection at the top */}
+            <ReciterHeader onOpen={() => setIsReciterDialogOpen(true)} />
+            <ReciterDialog isOpen={isReciterDialogOpen} onClose={() => setIsReciterDialogOpen(false)} />
+
             {/* Index Header */}
             <header className="flex justify-between items-center">
               <div>
@@ -174,7 +181,10 @@ export default function QuranReader() {
               </div>
             )}
 
-            <AdBanner className="rounded-3xl mt-4" />
+            <div className="mt-8 pb-10">
+              <AdBanner className="rounded-3xl shadow-sm border border-emerald-500/5 bg-emerald-500/5" />
+            </div>
+
           </motion.div>
         ) : (
           <motion.div 
@@ -296,7 +306,9 @@ export default function QuranReader() {
                 ))
               )}
 
-              <AdBanner className="rounded-3xl mt-8" />
+              <div className="mt-12 pb-10">
+                <AdBanner className="rounded-3xl shadow-sm border border-emerald-500/5 bg-emerald-500/5" />
+              </div>
             </div>
           </motion.div>
         )}

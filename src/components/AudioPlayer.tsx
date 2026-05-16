@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Play, Pause, SkipForward, SkipBack, 
   Repeat, Volume2, X, ChevronUp, ChevronDown, 
@@ -39,8 +39,8 @@ export default function AudioPlayer() {
           onClick={() => setIsFull(true)}
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center border border-emerald-500/10">
-              <span className="text-[10px] font-bold text-emerald-600">{currentSurah}</span>
+            <div className="w-10 h-10 bg-emerald-500 flex items-center justify-center rounded-xl text-white font-black text-sm">
+               {activeQari?.englishName.charAt(0)}
             </div>
             <div>
               <p className="text-xs font-bold text-foreground truncate max-w-[120px]">Ayah {currentAyah}</p>
@@ -95,9 +95,9 @@ export default function AudioPlayer() {
           initial={{ opacity: 0, y: '100%' }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: '100%' }}
-          className="fixed inset-0 bg-background z-50 flex flex-col p-8 pb-12"
+          className="fixed inset-0 bg-background z-50 flex flex-col p-8 pb-12 overflow-y-auto no-scrollbar"
         >
-          <header className="flex justify-between items-center mb-12">
+          <header className="flex justify-between items-center mb-10">
             <button onClick={() => setIsFull(false)} className="p-2 -ml-2 text-foreground/70">
               <ChevronDown size={28} />
             </button>
@@ -108,20 +108,16 @@ export default function AudioPlayer() {
             <button className="p-2 text-foreground/70"><Info size={22} /></button>
           </header>
 
-          <div className="flex-1 flex flex-col items-center justify-center gap-12">
+          <div className="flex-1 flex flex-col items-center justify-center gap-10">
             {/* Artwork/Visualization */}
-            <div className="relative w-64 h-64 flex items-center justify-center">
+            <div className="relative w-56 h-56 flex items-center justify-center">
                <motion.div 
                 animate={{ rotate: isPlaying ? 360 : 0 }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                 className="absolute inset-0 rounded-full border border-emerald-500/10 bg-gradient-to-tr from-emerald-500/10 to-transparent"
                />
-               <div className="w-48 h-48 bg-white/5 border border-emerald-500/20 rounded-full flex flex-col items-center justify-center shadow-inner relative">
-                  <span className="text-5xl font-black text-emerald-600/20">{currentSurah}</span>
-                  <div className="absolute inset-0 flex items-center justify-center rotate-45">
-                    <div className="w-full h-[1px] bg-emerald-500/5" />
-                    <div className="h-full w-[1px] bg-emerald-500/5" />
-                  </div>
+               <div className="w-40 h-40 bg-white/5 border border-emerald-500/20 rounded-full flex flex-col items-center justify-center shadow-inner relative overflow-hidden">
+                  <span className="text-5xl font-black text-emerald-600/40 relative z-10">{currentSurah}</span>
                </div>
             </div>
 
@@ -130,6 +126,40 @@ export default function AudioPlayer() {
               <div className="flex items-center justify-center gap-2 px-4 py-1.5 bg-emerald-500/10 rounded-full border border-emerald-500/10">
                 <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">{activeQari?.englishName}</span>
               </div>
+            </div>
+
+            {/* Qari Selector - Now closer to controls and visually connected */}
+            <div className="w-full space-y-4">
+               <div className="flex items-center justify-between px-1">
+                 <p className="text-[10px] font-bold text-emerald-500/50 uppercase tracking-widest">Select Reciter</p>
+               </div>
+               <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x">
+                  {QARIS.map(q => (
+                    <button
+                      key={q.identifier}
+                      onClick={() => setQari(q.identifier)}
+                      className={cn(
+                        "flex-shrink-0 w-16 flex flex-col items-center gap-2 transition-all snap-center",
+                        currentQari === q.identifier ? "scale-110" : "opacity-30 grayscale hover:opacity-100"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-12 h-12 rounded-xl flex items-center justify-center font-black text-sm transition-all border-2",
+                        currentQari === q.identifier 
+                          ? "bg-emerald-500 border-emerald-400 text-white shadow-lg shadow-emerald-500/20" 
+                          : "bg-emerald-500/10 border-transparent text-emerald-500"
+                      )}>
+                        {q.englishName.charAt(0)}
+                      </div>
+                      <p className={cn(
+                        "text-[8px] font-bold truncate w-full",
+                        currentQari === q.identifier ? "text-emerald-500" : "text-foreground/70"
+                      )}>
+                        {q.englishName.split(' ').pop()}
+                      </p>
+                    </button>
+                  ))}
+               </div>
             </div>
 
             {/* Controls */}
@@ -189,27 +219,6 @@ export default function AudioPlayer() {
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Qari Selector */}
-          <div className="mt-8 space-y-4">
-             <p className="text-[10px] font-bold text-emerald-500/50 uppercase tracking-widest px-1">Selected Reciter</p>
-             <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
-                {QARIS.map(q => (
-                  <button
-                    key={q.identifier}
-                    onClick={() => setQari(q.identifier)}
-                    className={cn(
-                      "flex-shrink-0 px-5 py-3 rounded-2xl border text-xs font-bold transition-all",
-                      currentQari === q.identifier 
-                        ? "bg-emerald-600 text-white border-emerald-500 shadow-lg" 
-                        : "bg-white/5 text-foreground/50 border-emerald-500/10"
-                    )}
-                  >
-                    {q.englishName}
-                  </button>
-                ))}
-             </div>
           </div>
         </motion.div>
       )}

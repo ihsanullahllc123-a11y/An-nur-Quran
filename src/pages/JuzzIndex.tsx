@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, Book, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import AdBanner from '../components/AdBanner';
 
 const JUZZ_DATA = [
   { id: 1, name: "Alif Lam Meem", range: "1:1 - 2:141", page: 1 },
@@ -95,6 +96,7 @@ export default function JuzzIndex() {
           </motion.button>
         ))}
       </div>
+      <AdBanner className="rounded-3xl mt-2" />
     </div>
   );
 }

@@ -1,23 +1,63 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { User, Shield, Bell, Moon, Globe, Type, Trash2, Info, ChevronRight, LogIn, LogOut, Sparkles, Mic, Scale, School, ScrollText, HandHeart } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { User, Shield, Bell, Moon, Globe, Type, Trash2, Info, ChevronRight, ChevronDown, LogIn, LogOut, Sparkles, Mic, Scale, School, ScrollText, HandHeart, MessageCircle, Search } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { useAudioStore, QARIS } from '../store/useAudioStore';
 import { signInWithGoogle, logout } from '../lib/firebase';
 import { cn } from '../lib/utils';
 import { PRAYER_METHODS } from '../lib/prayerUtils';
-
 import { useNavigate } from 'react-router-dom';
-
 import Logo from '../components/Logo';
+import AdBanner from '../components/AdBanner';
+import SelectionOverlay from '../components/SelectionOverlay';
+
+const TRANSLATIONS = [
+  { id: 'en.sahih', name: 'English', detail: 'Sahih International' },
+  { id: 'ur.ahmedali', name: 'Urdu', detail: 'Ahmed Ali' },
+  { id: 'ur.jalandhry', name: 'Urdu', detail: 'Fateh Muhammad Jalandhry' },
+  { id: 'hi.hindi', name: 'Hindi', detail: 'Suhel Farooq Khan' },
+  { id: 'bn.bengali', name: 'Bengali', detail: 'Zohurul Hoque' },
+  { id: 'tr.diyanet', name: 'Turkish', detail: 'Diyanet Isleri' },
+  { id: 'fr.hamidullah', name: 'French', detail: 'Muhammad Hamidullah' },
+  { id: 'de.aburida', name: 'German', detail: 'Abu Rida' },
+  { id: 'es.asad', name: 'Spanish', detail: 'Muhammad Asad' },
+  { id: 'ru.kuliev', name: 'Russian', detail: 'Elmir Kuliev' },
+  { id: 'id.indonesian', name: 'Indonesian', detail: 'Bahasa Indonesia' },
+  { id: 'my.melayu', name: 'Malay', detail: 'Basmeih' },
+  { id: 'zh.jian', name: 'Chinese', detail: 'Ma Jian' },
+  { id: 'fa.ghomshei', name: 'Persian', detail: 'Mahdi Elahi Ghomshei' },
+  { id: 'it.piccardo', name: 'Italian', detail: 'Hamza Roberto Piccardo' },
+  { id: 'nl.siregar', name: 'Dutch', detail: 'Sofian S. Siregar' },
+  { id: 'sv.bernstrom', name: 'Swedish', detail: 'Kanut Bernström' },
+  { id: 'no.berg', name: 'Norwegian', detail: 'Einar Berg' },
+  { id: 'pl.bielawski', name: 'Polish', detail: 'Józef Bielawski' },
+  { id: 'pt.nasr', name: 'Portuguese', detail: 'Helmy Nasr' },
+];
 
 export default function Settings() {
   const navigate = useNavigate();
   const { settings, setSettings, user } = useAppStore();
   const { currentQari, setQari } = useAudioStore();
+  const [selectionData, setSelectionData] = useState<{
+    isOpen: boolean;
+    title: string;
+    options: any[];
+    selectedValue: any;
+    onSelect: (val: any) => void;
+    showSearch?: boolean;
+  }>({
+    isOpen: false,
+    title: "",
+    options: [],
+    selectedValue: "",
+    onSelect: () => {},
+    showSearch: false
+  });
+
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>(
     typeof Notification !== 'undefined' ? Notification.permission : 'default'
   );
+
   const [cacheSize, setCacheSize] = useState("Calculating...");
 
   useEffect(() => {
@@ -107,10 +147,14 @@ export default function Settings() {
           icon: Mic, 
           label: "Selected Reciter", 
           value: activeQari?.englishName, 
-          action: () => {
-            const nextIdx = (QARIS.findIndex(q => q.identifier === currentQari) + 1) % QARIS.length;
-            setQari(QARIS[nextIdx].identifier);
-          } 
+          action: () => setSelectionData({
+            isOpen: true,
+            title: "Select Reciter",
+            options: QARIS.map(q => ({ id: q.identifier, name: q.englishName, detail: q.origin })),
+            selectedValue: currentQari,
+            onSelect: (id) => setQari(id),
+            showSearch: true
+          })
         },
       ]
     },
@@ -121,18 +165,30 @@ export default function Settings() {
           icon: Scale, 
           label: "Calculation Method", 
           value: activeMethod?.name.substring(0, 20) + "...", 
-          action: () => {
-            const nextIdx = (PRAYER_METHODS.findIndex(m => m.id === settings.prayerMethod) + 1) % PRAYER_METHODS.length;
-            setSettings({ prayerMethod: PRAYER_METHODS[nextIdx].id });
-          } 
+          action: () => setSelectionData({
+            isOpen: true,
+            title: "Calculation Method",
+            options: PRAYER_METHODS.map(m => ({ id: m.id, name: m.name })),
+            selectedValue: settings.prayerMethod,
+            onSelect: (id) => setSettings({ prayerMethod: id }),
+            showSearch: false
+          })
         },
         { 
           icon: School, 
           label: "Asr School", 
           value: settings.asrSchool === 0 ? "SHAFII/STANDARD" : "HANAFI", 
-          action: () => {
-            setSettings({ asrSchool: settings.asrSchool === 0 ? 1 : 0 });
-          } 
+          action: () => setSelectionData({
+            isOpen: true,
+            title: "Asr Jurisprudence",
+            options: [
+              { id: 0, name: "Shafii (Standard)" },
+              { id: 1, name: "Hanafi" }
+            ],
+            selectedValue: settings.asrSchool,
+            onSelect: (id) => setSettings({ asrSchool: id }),
+            showSearch: false
+          })
         },
       ]
     },
@@ -143,21 +199,27 @@ export default function Settings() {
           icon: Type, 
           label: "Font Size", 
           value: `${settings.fontSize}px`, 
-          action: () => {
-            const sizes = [16, 20, 24, 28, 32];
-            const next = sizes[(sizes.indexOf(settings.fontSize) + 1) % sizes.length];
-            setSettings({ fontSize: next });
-          } 
+          action: () => setSelectionData({
+            isOpen: true,
+            title: "Font Size",
+            options: [16, 20, 24, 28, 32].map(s => ({ id: s, name: `${s}px` })),
+            selectedValue: settings.fontSize,
+            onSelect: (id) => setSettings({ fontSize: id }),
+            showSearch: false
+          })
         },
         { 
           icon: Globe, 
           label: "Translation", 
           value: settings.translation.split('.')[1]?.toUpperCase() || 'SAHIH', 
-          action: () => {
-            const translations = ['en.sahih', 'ur.ahmedali', 'tr.diyanet'];
-            const next = translations[(translations.indexOf(settings.translation) + 1) % translations.length];
-            setSettings({ translation: next });
-          } 
+          action: () => setSelectionData({
+            isOpen: true,
+            title: "Quran Translation",
+            options: TRANSLATIONS,
+            selectedValue: settings.translation,
+            onSelect: (id) => setSettings({ translation: id }),
+            showSearch: true
+          })
         },
       ]
     },
@@ -168,11 +230,19 @@ export default function Settings() {
           icon: Moon, 
           label: "Theme", 
           value: settings.theme.toUpperCase(), 
-          action: () => {
-            const themes: ('light' | 'dark' | 'amoled' | 'emerald')[] = ['light', 'dark', 'amoled', 'emerald'];
-            const next = themes[(themes.indexOf(settings.theme) + 1) % themes.length];
-            setSettings({ theme: next });
-          } 
+          action: () => setSelectionData({
+            isOpen: true,
+            title: "Select Theme",
+            options: [
+              { id: 'light', name: 'LIGHT ☀️' },
+              { id: 'dark', name: 'DARK 🌙' },
+              { id: 'amoled', name: 'AMOLED ⚫' },
+              { id: 'emerald', name: 'EMERALD 🌿' }
+            ],
+            selectedValue: settings.theme,
+            onSelect: (id) => setSettings({ theme: id }),
+            showSearch: false
+          })
         },
       ]
     },
@@ -194,6 +264,18 @@ export default function Settings() {
           value: cacheSize, 
           color: "text-red-500", 
           action: handleClearCache 
+        },
+      ]
+    },
+    {
+      title: "Support & Feedback",
+      items: [
+        { 
+          icon: MessageCircle, 
+          label: "WhatsApp Support", 
+          value: "03705814905", 
+          color: "text-emerald-500", 
+          action: () => window.open('https://wa.me/923705814905', '_blank') 
         },
       ]
     }
@@ -243,6 +325,11 @@ export default function Settings() {
 
       {/* Settings Sections */}
       <div className="space-y-6">
+        <SelectionOverlay 
+          {...selectionData} 
+          onClose={() => setSelectionData(prev => ({ ...prev, isOpen: false }))} 
+        />
+
         {sections.map((section) => (
           <div key={section.title} className="space-y-2">
             <h3 className="px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-500/50">{section.title}</h3>
@@ -282,6 +369,10 @@ export default function Settings() {
         <div className="text-center">
           <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Version 1.2.0</p>
           <p className="text-[10px] text-muted-foreground mt-1">Made with barakah for the Ummah</p>
+        </div>
+
+        <div className="w-full max-w-[320px] mx-auto mt-6 pb-12">
+          <AdBanner className="rounded-2xl shadow-sm border border-emerald-500/5 bg-emerald-500/5" />
         </div>
       </div>
     </div>

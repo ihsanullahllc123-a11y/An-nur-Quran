@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { initializeFirestore, doc, getDocFromServer, enableIndexedDbPersistence } from 'firebase/firestore';
+import { initializeFirestore, doc, getDoc, setDoc, serverTimestamp, getDocFromServer, enableIndexedDbPersistence } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
@@ -13,7 +13,7 @@ export const db = initializeFirestore(app, {
 // Attempt to enable persistence silently
 enableIndexedDbPersistence(db).catch((err) => {
   if (err.code === 'failed-precondition') {
-    // Multiple tabs open, persistence can only be enabled in one tab at a a time.
+    // Multiple tabs open, persistence can only be enabled in one tab at a time.
     console.warn('Firestore persistence failed: failed-precondition');
   } else if (err.code === 'unimplemented') {
     // The current browser does not support all of the features required to enable persistence
@@ -24,12 +24,60 @@ enableIndexedDbPersistence(db).catch((err) => {
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
+/**
+ * Creates or updates a user document in Firestore on login.
+ */
+export const syncUserProfile = async (user: any) => {
+  if (!user) return;
+  
+  const userRef = doc(db, 'users', user.uid);
+  try {
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists()) {
+      // Create new user profile if it doesn't exist
+      await setDoc(userRef, {
+        userId: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        settings: {
+          theme: 'emerald',
+          fontFamily: 'Inter',
+          fontSize: 18,
+          translation: 'en.sahih',
+          reciter: 'ar.alafasy'
+        },
+        stats: {
+          streakCount: 0,
+          totalAyahsRead: 0,
+          lastReadDate: serverTimestamp()
+        },
+        createdAt: serverTimestamp()
+      });
+      console.log('New user profile created in Firestore');
+    }
+  } catch (error) {
+    console.error('Error syncing user profile:', error);
+    // Don't throw here to avoid blocking sign-in if Firestore is down
+  }
+};
+
 export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
+    // Sync profile after successful auth
+    await syncUserProfile(result.user);
     return result.user;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error signing in with Google:', error);
+    
+    if (error.code === 'auth/popup-blocked') {
+      alert('Sign-in popup was blocked by your browser. Please allow popups for this site or open in a new tab.');
+    } else if (error.code === 'auth/unauthorized-domain') {
+      alert('This domain is not authorized for Google Sign-in. Please ensure it is added to the Authorized Domains in Firebase Console.');
+    }
+    
     throw error;
   }
 };

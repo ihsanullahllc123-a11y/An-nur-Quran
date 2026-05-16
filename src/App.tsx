@@ -9,6 +9,9 @@ import { useAppStore } from './store/useAppStore';
 import Navigation from './components/Navigation';
 import AudioPlayer from './components/AudioPlayer';
 import SplashScreen from './components/SplashScreen';
+import AdInterstitial from './components/AdInterstitial';
+import AdBanner from './components/AdBanner';
+import { useInterstitial } from './hooks/useInterstitial';
 
 // Pages
 import Home from './pages/Home';
@@ -30,7 +33,7 @@ const PageWrapper = ({ children }: { children: React.ReactNode }) => (
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -20 }}
     transition={{ duration: 0.3 }}
-    className="pb-20 min-h-screen"
+    className="pb-52 min-h-screen"
   >
     {children}
   </motion.div>
@@ -38,8 +41,9 @@ const PageWrapper = ({ children }: { children: React.ReactNode }) => (
 
 const AppContent = () => {
   const location = useLocation();
-  const { setUser, settings } = useAppStore();
+  const { setUser, settings, setSettings } = useAppStore();
   const [showSplash, setShowSplash] = useState(true);
+  const { showInterstitial, closeAd, interstitialId, isTest } = useInterstitial();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -49,11 +53,31 @@ const AppContent = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Fetch additional user data from Firestore if needed
+        setUser(user);
+        
+        // Optionally fetch and sync settings
+        try {
+          const { getDoc, doc } = await import('firebase/firestore');
+          const { db } = await import('./lib/firebase');
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            if (userData.settings) {
+              setSettings(userData.settings);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching user settings:', error);
+        }
+      } else {
+        setUser(null);
+      }
     });
     return () => unsubscribe();
-  }, [setUser]);
+  }, [setUser, setSettings]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -64,6 +88,12 @@ const AppContent = () => {
   return (
     <div className="bg-background text-foreground font-sans min-h-screen transition-colors duration-300">
       <SplashScreen isVisible={showSplash} />
+      <AdInterstitial 
+        isOpen={showInterstitial} 
+        onClose={closeAd} 
+        adId={interstitialId}
+        isTest={isTest}
+      />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />

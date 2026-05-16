@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { getNextPrayer, getTimeRemaining, formatTime12h } from '../lib/prayerUtils';
 import { cn } from '../lib/utils';
 import Logo from '../components/Logo';
+import { ReciterHeader, ReciterDialog } from '../components/ReciterSelection';
 import AdBanner from '../components/AdBanner';
 
 const DashboardCard = ({ icon: Icon, title, to, color = "bg-emerald-50" }: any) => (
@@ -155,7 +156,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+ 
       {/* Dashboard Grid */}
       <section className="space-y-4">
         <h2 className="text-sm font-bold uppercase tracking-widest text-emerald-600 px-1">Menu</h2>
@@ -187,7 +188,7 @@ export default function Home() {
         <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
       </section>
 
-      <AdBanner className="rounded-3xl mt-2" />
+      <AdBanner className="rounded-[2.5rem] mt-2 shadow-sm border border-emerald-500/5 bg-emerald-500/5" />
     </div>
   );
 }
